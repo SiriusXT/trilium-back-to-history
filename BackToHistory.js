@@ -1,11 +1,12 @@
 /*
 BackToHistory
 https://github.com/SiriusXT/trilium-back-to-history
-version:0.1.1
+version:0.1.2
 */
 
 window.backTo = new Array();
 window.backTo["historyNoteId"]=""; // Fill in the note id used to store history progress
+window.backTo["autoJump"]=0; //1: Automatically jump   0: Manual jump
 window.backTo["maxHistory"]=100; // Maximum number of saved histories 
 
 if (window.backTo["historyNoteId"]==""){
@@ -81,7 +82,7 @@ class BackToHistoryWidget extends api.NoteContextAwareWidget {
 	window.backTo['scrollTo']=function (){      
 				$(window.backTo["noteDiv"]).animate({
                 scrollTop:window.backTo["lastScale"] * window.backTo["scrollHeight"],
-                }, 500);
+                }, 300);
                 
 	  }      
 </script>`);
@@ -127,6 +128,9 @@ if ($("div.component.note-split:not(.hidden-ext) div.ribbon-tab-title").last().a
 				return;
 			}
             $(".backToHis.ribbon-tab-title-icon.bx").attr("title", "Back To "+(window.backTo["history"][noteId] * 100).toFixed(1)+"%");
+            if (window.backTo["autoJump"]==1){
+                setTimeout(window.backTo['scrollTo'],10);
+            }
 		});
 	}
 }

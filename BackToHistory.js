@@ -1,15 +1,15 @@
 /*
 BackToHistory
 https://github.com/SiriusXT/trilium-back-to-history
-version:0.1
+version:0.1.1
 */
 
 window.backTo = new Array();
-window.backTo["historyNoteId"]=""; // Fill in the note id used to store history 
+window.backTo["historyNoteId"]=""; // Fill in the note id used to store history progress
 window.backTo["maxHistory"]=100; // Maximum number of saved histories 
 
 if (window.backTo["historyNoteId"]==""){
-    api.showMessage("Fill in the note id used to store history ");
+    api.showMessage("Fill in the note id used to store history progress");
     return
 }
 window.backTo["fnotetype"]=0; 
@@ -79,10 +79,10 @@ class BackToHistoryWidget extends api.NoteContextAwareWidget {
 </style>
 <script>
 	window.backTo['scrollTo']=function (){      
-				window.backTo["noteDiv"].scrollTo({
-					top: window.backTo["lastScale"] * window.backTo["scrollHeight"],
-					behavior: 'smooth'
-				});
+				$(window.backTo["noteDiv"]).animate({
+                scrollTop:window.backTo["lastScale"] * window.backTo["scrollHeight"],
+                }, 500);
+                
 	  }      
 </script>`);
 		return this.$widget;

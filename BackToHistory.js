@@ -129,7 +129,7 @@ if ($("div.component.note-split:not(.hidden-ext) div.ribbon-tab-title").last().a
 			}
             $(".backToHis.ribbon-tab-title-icon.bx").attr("title", "Back To "+(window.backTo["history"][noteId] * 100).toFixed(1)+"%");
             if (window.backTo["autoJump"]==1){
-                setTimeout(window.backTo['scrollTo'],10);
+                setTimeout(window.backTo['scrollTo'],100);
             }
 		});
 	}

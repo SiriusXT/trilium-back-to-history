@@ -6,7 +6,7 @@ version:0.1.3
 
 window.backTo = new Array();
 window.backTo["historyNoteId"]=""; // Fill in the note id used to store history progress
-window.backTo["autoJump"]=1; //1: Automatically jump   0: Manual jump
+window.backTo["autoJump"]=0; //1: Automatically jump   0: Manual jump
 window.backTo["maxHistory"]=100; // Maximum number of saved histories 
 
 window.backTo['preHeight']=0; //window.backTo["jumpInterval"]

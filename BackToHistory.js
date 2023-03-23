@@ -150,7 +150,6 @@ class BackToHistoryWidget extends api.NoteContextAwareWidget {
 
 		async entitiesReloadedEvent() {
 			scrollFunc();
-			clearInterval(window.backTo["jumpInterval"]);
 		}
 	}
 

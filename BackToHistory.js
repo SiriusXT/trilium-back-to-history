@@ -1,12 +1,12 @@
 /*
 BackToHistory
 https://github.com/SiriusXT/trilium-back-to-history
-version:0.1.3
+version:0.1.2
 */
 
 window.backTo = new Array();
 window.backTo["historyNoteId"]=""; // Fill in the note id used to store history progress
-window.backTo["autoJump"]=0; //1: Automatically jump   0: Manual jump
+window.backTo["autoJump"]=1; //1: Automatically jump   0: Manual jump
 window.backTo["maxHistory"]=100; // Maximum number of saved histories 
 
 window.backTo['preHeight']=0; //window.backTo["jumpInterval"]
@@ -76,10 +76,11 @@ class BackToHistoryWidget extends api.NoteContextAwareWidget {
 	}
 
 	doRender() {
-		this.$widget = $(` < style type = "text/css" >
-			.backToHis.ribbon - tab - title - icon.bx::before {
-				content: "\\e9b9";
-			} < /style>
+		this.$widget = $(`<style type="text/css">
+	.backToHis.ribbon-tab-title-icon.bx::before{
+	        content: "\\e9b9";
+	    }
+</style>
 <script>
 	window.backTo['scrollTo']=function (){      
 				$(window.backTo["noteDiv"]).animate({
@@ -87,7 +88,7 @@ class BackToHistoryWidget extends api.NoteContextAwareWidget {
                 }, 300);
                 
 	  }      
-</script > `);
+</script>`);
 		return this.$widget;
 	}
 
@@ -111,16 +112,17 @@ class BackToHistoryWidget extends api.NoteContextAwareWidget {
 		}
 		$(document).ready(function() {
 				getnoteDiv();
-				if ($("div.component.note-split:not(.hidden-ext) div.ribbon-tab-title").last().attr('class') != 'backToHis ribbon-tab-title') {
-					$("div.component.note-split:not(.hidden-ext) .ribbon-tab-title").last().after(` < div class = "backToHis ribbon-tab-spacer"
-						style = "display:none;" > < /div>
+				if ($("div.component.note-split:not(.hidden-ext) div.ribbon-tab-title").last().attr('class')!='backToHis ribbon-tab-title'){
+    $("div.component.note-split:not(.hidden-ext) .ribbon-tab-title").last().after(`<div class="backToHis ribbon-tab-spacer" style="display:none;"></div>
 <div  class="backToHis ribbon-tab-title" style="display:none;" onclick="window.backTo['scrollTo']()">
-	<span  class="backToHis ribbon-tab-title-icon bx" style="display:none;"></span > < /div>
+	<span  class="backToHis ribbon-tab-title-icon bx" style="display:none;"></span>
+</div>
 
 `);
 }
 			if (window.backTo["history"].hasOwnProperty(noteId) && window.backTo["history"][noteId] != "NaN") {
-                window.backTo["lastScale"]=window.backTo["history"][window.backTo["noteId"]]; // When refreshing, it has to be fixed, otherwise it will change when scrolling.$("div.component.note-split:not(.hidden-ext) .backToHis").css('display', 'block');
+                window.backTo["lastScale"]=window.backTo["history"][window.backTo["noteId"]];// When refreshing, it has to be fixed, otherwise it will change when scrolling.
+                $("div.component.note-split:not(.hidden-ext) .backToHis").css('display', 'block');
 					} else {
 						$("div.component.note-split:not(.hidden-ext) .backToHis").css("display", "none");
 						while (Object.keys(window.backTo["history"]).length > window.backTo["maxHistory"]) {

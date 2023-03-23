@@ -43,7 +43,7 @@ function saveHis(){
                 const historyNote = await api.getNote(historyNoteId);
                 historyNote.setContent(JSON.stringify(history));
             }, [historyNoteId,history]);
-       }, 5000,window.backTo["historyNoteId"],window.backTo["history"]);         
+       }, 2000,window.backTo["historyNoteId"],window.backTo["history"]);         
             
      }
 }

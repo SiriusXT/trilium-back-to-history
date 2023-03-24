@@ -1,7 +1,7 @@
 /*
 BackToHistory
 https://github.com/SiriusXT/trilium-back-to-history
-version:0.1.4
+version:0.1.5
 */
 window.backTo = new Array();
 window.backTo["historyNoteId"]=""; // Fill in the note id used to store history progress
@@ -9,6 +9,7 @@ window.backTo["autoJump"]=1; //1: Automatically jump   0: Manual jump
 window.backTo["maxHistory"]=100; // Maximum number of saved histories 
 
 window.backTo['preHeight']=0; //window.backTo["jumpInterval"]
+window.backTo['canListen']=0;  //0: can Listen
 if (window.backTo["historyNoteId"]==""){
     api.showMessage("Fill in the note id used to store history progress");
     return
@@ -32,7 +33,7 @@ function saveHis(){
     if (api.getActiveContextNote()==null){return};
         if (window.backTo["fnotetype"]==0){ return};
         getnoteDiv();
-        const scrollbl=(window.backTo["noteDiv"].scrollTop/window.backTo["noteDiv"].scrollHeight).toFixed(3);
+        const scrollbl=(window.backTo["noteDiv"].scrollTop/window.backTo["noteDiv"].scrollHeight).toFixed(5);
         if (true){
             window.backTo["history"][window.backTo["noteId"]]=scrollbl;
             
@@ -48,6 +49,7 @@ function saveHis(){
      }
 }
 function scrollFunc(event){
+    if (window.backTo['canListen']!=0){return;};
     clearTimeout(window.backTo["scrollTimer"]);
     clearTimeout(window.backTo["jumpInterval"]);
       window.backTo["scrollTimer"] = setTimeout(saveHis, 1000);
@@ -85,10 +87,12 @@ class BackToHistoryWidget extends api.NoteContextAwareWidget {
 	    }
 </style>
 <script>
-	window.backTo['scrollTo']=function (){ 
+	window.backTo['scrollTo']=function (){ window.backTo['canListen']+=1;
 				$(window.backTo["noteDiv"]).animate({
                 scrollTop:window.backTo["lastScale"] * window.backTo["noteDiv"].scrollHeight,
-                 }, 300 );
+                 }, 300 ,function(){
+                 setTimeout(function() {window.backTo['canListen']-=1;},1000)
+                 });
 	  }      
 </script>`);
 		return this.$widget;
@@ -149,12 +153,15 @@ class BackToHistoryWidget extends api.NoteContextAwareWidget {
 						}, 10);
 					}
             
-            window.backTo["noteDiv"].addEventListener('scroll', function(event) {
+            setTimeout(function() {
+            $(window.backTo["noteDiv"]).on('scroll', function(event) {
                 if ($(this).is(':animated')) {
                 return;
                   }
+                
               scrollFunc(event);
 });
+            },1000); //When opening a new page, it takes a second to start recording
             
 				});
 		}

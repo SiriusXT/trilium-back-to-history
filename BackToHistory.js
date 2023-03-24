@@ -4,7 +4,7 @@ https://github.com/SiriusXT/trilium-back-to-history
 version:0.1.4
 */
 window.backTo = new Array();
-window.backTo["historyNoteId"]="KaRRn1daBqak"; // Fill in the note id used to store history progress
+window.backTo["historyNoteId"]=""; // Fill in the note id used to store history progress
 window.backTo["autoJump"]=1; //1: Automatically jump   0: Manual jump
 window.backTo["maxHistory"]=100; // Maximum number of saved histories 
 

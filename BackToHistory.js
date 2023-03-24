@@ -1,11 +1,10 @@
 /*
 BackToHistory
 https://github.com/SiriusXT/trilium-back-to-history
-version:0.1.2
+version:0.1.4
 */
-
 window.backTo = new Array();
-window.backTo["historyNoteId"]=""; // Fill in the note id used to store history progress
+window.backTo["historyNoteId"]="KaRRn1daBqak"; // Fill in the note id used to store history progress
 window.backTo["autoJump"]=1; //1: Automatically jump   0: Manual jump
 window.backTo["maxHistory"]=100; // Maximum number of saved histories 
 
@@ -39,6 +38,7 @@ function saveHis(){
             
             clearTimeout(window.backTo["saveHisTimer"]);
             window.backTo["saveHisTimer"] = setTimeout((historyNoteId,history) => {
+                
             api.runOnBackend(async (historyNoteId,history) => { 
                 const historyNote = await api.getNote(historyNoteId);
                 historyNote.setContent(JSON.stringify(history));
@@ -50,19 +50,22 @@ function saveHis(){
 function scrollFunc(event){
     clearTimeout(window.backTo["scrollTimer"]);
     clearTimeout(window.backTo["jumpInterval"]);
-  window.backTo["scrollTimer"] = setTimeout(saveHis, 1000);
+      window.backTo["scrollTimer"] = setTimeout(saveHis, 1000);
 }
 
 $(document).ready(function() {
 	setTimeout(function() {
 		var detail = document.querySelectorAll("div#rest-pane");
 		if (detail.length == 1) {
-			detail[0].addEventListener("mousewheel", scrollFunc);
-            detail[0].addEventListener("DOMMouseScroll", scrollFunc);
+			//detail[0].addEventListener("mousewheel", scrollFunc);
+            //detail[0].addEventListener("DOMMouseScroll", scrollFunc);
+            //$('div#rest-pane').scroll(scrollFunc());
+            
 		} else {
 			api.showMessage("detail.length Error");
 		}
 		getnoteDiv();
+        
 	},
 	1000)
 });
@@ -82,11 +85,10 @@ class BackToHistoryWidget extends api.NoteContextAwareWidget {
 	    }
 </style>
 <script>
-	window.backTo['scrollTo']=function (){      
+	window.backTo['scrollTo']=function (){ 
 				$(window.backTo["noteDiv"]).animate({
                 scrollTop:window.backTo["lastScale"] * window.backTo["noteDiv"].scrollHeight,
-                }, 300);
-                
+                 }, 300 );
 	  }      
 </script>`);
 		return this.$widget;
@@ -145,8 +147,15 @@ class BackToHistoryWidget extends api.NoteContextAwareWidget {
 							window.backTo['preHeight'] = window.backTo["noteDiv"].scrollHeight;
 							window.backTo['scrollTo']();
 						}, 10);
-
 					}
+            
+            window.backTo["noteDiv"].addEventListener('scroll', function(event) {
+                if ($(this).is(':animated')) {
+                return;
+                  }
+              scrollFunc(event);
+});
+            
 				});
 		}
 

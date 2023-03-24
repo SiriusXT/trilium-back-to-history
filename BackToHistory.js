@@ -26,6 +26,10 @@ function getnoteDiv() {
 	}
 	window.backTo["noteDiv"] = noteDiv[0];
     //window.backTo["scrollHeight"] = window.backTo["noteDiv"].scrollHeight;
+    
+    window.backTo["note-list"]=document.querySelectorAll('div.component.note-split:not(.hidden-ext) div.note-list-widget.component');
+    
+    
 };
 
 
@@ -33,7 +37,11 @@ function saveHis(){
     if (api.getActiveContextNote()==null){return};
         if (window.backTo["fnotetype"]==0){ return};
         getnoteDiv();
-        const scrollbl=(window.backTo["noteDiv"].scrollTop/window.backTo["noteDiv"].scrollHeight).toFixed(5);
+    if (window.backTo["note-list"].length!=0){var scrollbl=(window.backTo["noteDiv"].scrollTop/(window.backTo["noteDiv"].scrollHeight-window.backTo["note-list"][0].offsetHeight)).toFixed(5);}
+    else{
+    var scrollbl=(window.backTo["noteDiv"].scrollTop/window.backTo["noteDiv"].scrollHeight).toFixed(5);
+    }
+        
         if (true){
             window.backTo["history"][window.backTo["noteId"]]=scrollbl;
             
@@ -88,8 +96,13 @@ class BackToHistoryWidget extends api.NoteContextAwareWidget {
 </style>
 <script>
 	window.backTo['scrollTo']=function (){ window.backTo['canListen']+=1;
+    if(window.backTo["note-list"].length!=0){
+    var scrollHeight=window.backTo["noteDiv"].scrollHeight-window.backTo["note-list"][0].offsetHeight;
+    }
+    else{var scrollHeight=window.backTo["noteDiv"].scrollHeight}
+    //console.log(scrollHeight);
 				$(window.backTo["noteDiv"]).animate({
-                scrollTop:window.backTo["lastScale"] * window.backTo["noteDiv"].scrollHeight,
+                scrollTop:window.backTo["lastScale"] * scrollHeight,
                  }, 300 ,function(){
                  setTimeout(function() {window.backTo['canListen']-=1;},1000)
                  });

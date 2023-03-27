@@ -1,83 +1,84 @@
 /*
 BackToHistory
 https://github.com/SiriusXT/trilium-back-to-history
-version:0.1.5
+version:0.1.6
 */
 window.backTo = new Array();
-window.backTo["historyNoteId"]=""; // Fill in the note id used to store history progress
-window.backTo["autoJump"]=1; //1: Automatically jump   0: Manual jump
-window.backTo["maxHistory"]=100; // Maximum number of saved histories 
+window.backTo["historyNoteId"] = ""; // Fill in the note id used to store history progress
+window.backTo["autoJump"] = 1; //1: Automatically jump   0: Manual jump
+window.backTo["maxHistory"] = 100; // Maximum number of saved histories 
 
-window.backTo['preHeight']=0; //window.backTo["jumpInterval"]
-window.backTo['canListen']=0;  //0: can Listen
-if (window.backTo["historyNoteId"]==""){
-    api.showMessage("Fill in the note id used to store history progress");
-    return
+window.backTo['preHeight'] = 0; //window.backTo["jumpInterval"]
+window.backTo['canListen'] = 0;  //0: can Listen
+//window.backTo['isDragging']=false;
+if (window.backTo["historyNoteId"] == "") {
+	api.showMessage("Fill in the note id used to store history progress");
+	return
 }
-window.backTo["fnotetype"]=0; 
+window.backTo["fnotetype"] = 0;
 function getnoteDiv() {
 	var noteDiv = document.querySelectorAll("div#rest-pane.component div.component div#center-pane.component div.component.split-note-container-widget div.component.note-split:not(.hidden-ext) div.component.scrolling-container div.note-detail.component.full-height div.note-detail-printable.component div.ck ");
-    if (noteDiv.length == 0) {
-   var noteDiv = document.querySelectorAll("div#rest-pane.component div.component div#center-pane.component div.component.split-note-container-widget div.component.note-split.type-code:not(.hidden-ext) div.component.scrolling-container div.note-detail.component.full-height div.note-detail-code.note-detail-printable.component div.note-detail-code-editor div.CodeMirror.cm-s-default.CodeMirror-wrap div.CodeMirror-vscrollbar");
-    }
+	if (noteDiv.length == 0) {
+		var noteDiv = document.querySelectorAll("div#rest-pane.component div.component div#center-pane.component div.component.split-note-container-widget div.component.note-split.type-code:not(.hidden-ext) div.component.scrolling-container div.note-detail.component.full-height div.note-detail-code.note-detail-printable.component div.note-detail-code-editor div.CodeMirror.cm-s-default.CodeMirror-wrap div.CodeMirror-vscrollbar");
+	}
 	if (noteDiv.length == 0) {
 		var noteDiv
-        = document.querySelectorAll("div#rest-pane.component div.component div#center-pane.component div.component.split-note-container-widget div.component.note-split:not(.hidden-ext) div.component.scrolling-container");
+			= document.querySelectorAll("div#rest-pane.component div.component div#center-pane.component div.component.split-note-container-widget div.component.note-split:not(.hidden-ext) div.component.scrolling-container");
 	}
 	window.backTo["noteDiv"] = noteDiv[0];
-    //window.backTo["scrollHeight"] = window.backTo["noteDiv"].scrollHeight;
-    
-    window.backTo["note-list"]=document.querySelectorAll('div.component.note-split:not(.hidden-ext) div.note-list-widget.component');
-    
-    
+	window.backTo["note-list"] = document.querySelectorAll('div.component.note-split:not(.hidden-ext) div.note-list-widget.component');
+
+
 };
 
 
-function saveHis(){
-    if (api.getActiveContextNote()==null){return};
-        if (window.backTo["fnotetype"]==0){ return};
-        getnoteDiv();
-    if (window.backTo["note-list"].length!=0){var scrollbl=(window.backTo["noteDiv"].scrollTop/(window.backTo["noteDiv"].scrollHeight-window.backTo["note-list"][0].offsetHeight)).toFixed(5);}
-    else{
-    var scrollbl=(window.backTo["noteDiv"].scrollTop/window.backTo["noteDiv"].scrollHeight).toFixed(5);
+function saveHis() {
+	if (api.getActiveContextNote() == null) { return };
+	if (window.backTo["fnotetype"] == 0) { return };
+	//getnoteDiv();
+	if (window.backTo["note-list"].length != 0) { 
+        var scrollbl = (window.backTo["noteDiv"].scrollTop / (window.backTo["noteDiv"].scrollHeight - window.backTo["note-list"][0].offsetHeight)).toFixed(5); 
     }
-        
-        if (true){
-            window.backTo["history"][window.backTo["noteId"]]=scrollbl;
-            
-            clearTimeout(window.backTo["saveHisTimer"]);
-            window.backTo["saveHisTimer"] = setTimeout((historyNoteId,history) => {
-                
-            api.runOnBackend(async (historyNoteId,history) => { 
-                const historyNote = await api.getNote(historyNoteId);
-                historyNote.setContent(JSON.stringify(history));
-            }, [historyNoteId,history]);
-       }, 2000,window.backTo["historyNoteId"],window.backTo["history"]);         
-            
-     }
+	else {
+		var scrollbl = (window.backTo["noteDiv"].scrollTop / window.backTo["noteDiv"].scrollHeight).toFixed(5);
+	}
+
+	if (true) {
+		window.backTo["history"][window.backTo["noteId"]] = scrollbl;
+
+		clearTimeout(window.backTo["saveHisTimer"]);
+		window.backTo["saveHisTimer"] = setTimeout((historyNoteId, history) => {
+			api.runOnBackend(async (historyNoteId, history) => {
+				const historyNote = await api.getNote(historyNoteId);
+				historyNote.setContent(JSON.stringify(history));
+			}, [historyNoteId, history]);
+		}, 2000, window.backTo["historyNoteId"], window.backTo["history"]);
+
+	}
 }
-function scrollFunc(event){
-    if (window.backTo['canListen']!=0){return;};
-    clearTimeout(window.backTo["scrollTimer"]);
-    clearTimeout(window.backTo["jumpInterval"]);
-      window.backTo["scrollTimer"] = setTimeout(saveHis, 1000);
+function scrollFunc(event) {
+	if (window.backTo['canListen'] != 0) { return; };
+	//console.log("scrollFunc");
+	clearTimeout(window.backTo["scrollTimer"]);
+	clearTimeout(window.backTo["jumpInterval"]);
+	window.backTo["scrollTimer"] = setTimeout(saveHis, 1000);
 }
 
-$(document).ready(function() {
-	setTimeout(function() {
+$(document).ready(function () {
+	setTimeout(function () {
 		var detail = document.querySelectorAll("div#rest-pane");
 		if (detail.length == 1) {
 			//detail[0].addEventListener("mousewheel", scrollFunc);
-            //detail[0].addEventListener("DOMMouseScroll", scrollFunc);
-            //$('div#rest-pane').scroll(scrollFunc());
-            
+			//detail[0].addEventListener("DOMMouseScroll", scrollFunc);
+			//$('div#rest-pane').scroll(scrollFunc());
+
 		} else {
 			api.showMessage("detail.length Error");
 		}
 		getnoteDiv();
-        
+
 	},
-	1000)
+		1000)
 });
 
 class BackToHistoryWidget extends api.NoteContextAwareWidget {
@@ -90,34 +91,34 @@ class BackToHistoryWidget extends api.NoteContextAwareWidget {
 
 	doRender() {
 		this.$widget = $(`<style type="text/css">
-	.backToHis.ribbon-tab-title-icon.bx::before{
-	        content: "\\e9b9";
-	    }
+	.backToHis.ribbon-tab-title-icon.bx::before {
+		content: "\\e9b9";
+	}
 </style>
 <script>
-	window.backTo['scrollTo']=function (){ window.backTo['canListen']+=1;
-    if(window.backTo["note-list"].length!=0){
-    var scrollHeight=window.backTo["noteDiv"].scrollHeight-window.backTo["note-list"][0].offsetHeight;
-    }
-    else{var scrollHeight=window.backTo["noteDiv"].scrollHeight}
-    //console.log(scrollHeight);
-				$(window.backTo["noteDiv"]).animate({
-                scrollTop:window.backTo["lastScale"] * scrollHeight,
-                 }, 300 ,function(){
-                 setTimeout(function() {window.backTo['canListen']-=1;},1000)
-                 });
-	  }      
+	window.backTo['scrollTo'] = function () {
+		window.backTo['canListen'] += 1;
+		if (window.backTo["note-list"].length != 0) {
+			var scrollHeight = window.backTo["noteDiv"].scrollHeight - window.backTo["note-list"][0].offsetHeight;
+		}
+		else { var scrollHeight = window.backTo["noteDiv"].scrollHeight; }
+		$(window.backTo["noteDiv"]).animate({
+			scrollTop: window.backTo["lastScale"] * scrollHeight,
+		}, 300, function () {
+			setTimeout(function () { window.backTo['canListen'] -= 1; }, 500);
+		});
+	}      
 </script>`);
 		return this.$widget;
 	}
 
 	async refreshWithNote(note) {
+		$(window.backTo["prenoteDiv"]).off('scroll');
 		window.backTo["noteId"] = note.noteId
 		const noteId = note.noteId
-		const note1 = await api.getNote(window.backTo["historyNoteId"]);
+		const historyNote = await api.getNote(window.backTo["historyNoteId"]);
 		try {
-			window.backTo["history"] = JSON.parse((await note1.getNoteComplement()).content);
-
+			window.backTo["history"] = JSON.parse((await historyNote.getNoteComplement()).content);
 		} catch (e) {
 			window.backTo["history"] = {};
 		}
@@ -126,62 +127,60 @@ class BackToHistoryWidget extends api.NoteContextAwareWidget {
 			window.backTo["fnotetype"] = 1;
 		} else {
 			window.backTo["fnotetype"] = 0;
-			$("div.component.note-split:not(.hidden-ext) .backToHis").css("display", "none");
+			//$("div.component.note-split:not(.hidden-ext) .backToHis").css("display", "none");
 			return;
 		}
-		$(document).ready(function() {
-				getnoteDiv();
-				if ($("div.component.note-split:not(.hidden-ext) div.ribbon-tab-title").last().attr('class')!='backToHis ribbon-tab-title'){
-    $("div.component.note-split:not(.hidden-ext) .ribbon-tab-title").last().after(`<div class="backToHis ribbon-tab-spacer" style="display:none;"></div>
+        
+		$(document).ready(function () {
+			window.backTo["prenoteDiv"] = window.backTo["noteDiv"];
+			getnoteDiv();
+			if ($("div.component.note-split:not(.hidden-ext) div.ribbon-tab-title").last().attr('class') != 'backToHis ribbon-tab-title') {
+				$("div.component.note-split:not(.hidden-ext) .ribbon-tab-title").last().after(`<div class="backToHis ribbon-tab-spacer" style="display:none;"></div>
 <div  class="backToHis ribbon-tab-title" style="display:none;" onclick="window.backTo['scrollTo']()">
 	<span  class="backToHis ribbon-tab-title-icon bx" style="display:none;"></span>
-</div>
-
-`);
-}
+</div>`);
+			}
 			if (window.backTo["history"].hasOwnProperty(noteId) && window.backTo["history"][noteId] != "NaN") {
-                window.backTo["lastScale"]=window.backTo["history"][window.backTo["noteId"]];// When refreshing, it has to be fixed, otherwise it will change when scrolling.
-                $("div.component.note-split:not(.hidden-ext) .backToHis").css('display', 'block');
-					} else {
-						$("div.component.note-split:not(.hidden-ext) .backToHis").css("display", "none");
-						while (Object.keys(window.backTo["history"]).length > window.backTo["maxHistory"]) {
-							delete window.backTo["history"][Object.keys(window.backTo["history"])[0]];
-						}
-						return;
-					}
-					$(".backToHis.ribbon-tab-title-icon.bx").attr("title", "Back To " + (window.backTo["history"][noteId] * 100).toFixed(1) + "%");
-					if (window.backTo["autoJump"] == 1) {
+				window.backTo["lastScale"] = window.backTo["history"][window.backTo["noteId"]];// When refreshing, it has to be fixed, otherwise it will change when scrolling.
+				$("div.component.note-split:not(.hidden-ext) .backToHis").css('display', 'block');
+			} else {
+				//$("div.component.note-split:not(.hidden-ext) .backToHis").css("display", "none");
+				while (Object.keys(window.backTo["history"]).length > window.backTo["maxHistory"]) {
+					delete window.backTo["history"][Object.keys(window.backTo["history"])[0]];
+				}
+				return;
+			}
+			$(".backToHis.ribbon-tab-title-icon.bx").attr("title", "Back To " + (window.backTo["history"][noteId] * 100).toFixed(1) + "%");
+			if (window.backTo["autoJump"] == 1) {
+				window.backTo['scrollTo']();
+				clearInterval(window.backTo["jumpInterval"]);
+				var timesRun = 0;
+				window.backTo["jumpInterval"] = setInterval(function () {
+					timesRun += 1;
+					if (timesRun == 50) {
 						clearInterval(window.backTo["jumpInterval"]);
-						var timesRun = 0;
-						window.backTo["jumpInterval"] = setInterval(function() {
-							timesRun += 1;
-							if (timesRun == 50) {
-								clearInterval(window.backTo["jumpInterval"]);
-							}
-							if (window.backTo["noteDiv"].scrollHeight == window.backTo['preHeight']) {
-								return
-							}
-							window.backTo['preHeight'] = window.backTo["noteDiv"].scrollHeight;
-							window.backTo['scrollTo']();
-						}, 10);
 					}
-            
-            setTimeout(function() {
-            $(window.backTo["noteDiv"]).on('scroll', function(event) {
-                if ($(this).is(':animated')) {
-                return;
-                  }
-                
-              scrollFunc(event);
-});
-            },1000); //When opening a new page, it takes a second to start recording
-            
-				});
-		}
 
-		async entitiesReloadedEvent() {
-			scrollFunc();
-		}
+					if (window.backTo["noteDiv"].scrollHeight == window.backTo['preHeight']) {
+						return
+					}
+					window.backTo['preHeight'] = window.backTo["noteDiv"].scrollHeight;
+					window.backTo['scrollTo']();
+				}, 20);
+			}
+
+			setTimeout(function () {
+				$(window.backTo["noteDiv"]).on('scroll', function (event) {
+					scrollFunc(event);
+				});
+			}, 1000); //When opening a new page, it takes a second to start recording
+
+		});
 	}
 
-	module.exports = new BackToHistoryWidget();
+	async entitiesReloadedEvent() {
+		scrollFunc();
+	}
+}
+
+module.exports = new BackToHistoryWidget();

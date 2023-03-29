@@ -95,9 +95,7 @@ class BackToHistoryWidget extends api.NoteContextAwareWidget {
 	async refreshWithNote(note) {
 		$(window.backTo["noteDiv"]).off('scroll');
 		window.backTo["noteId"] = note.noteId;
-		if (window.backTo["noteId"] == window.backTo["historyNoteId"]) { return }
-		//var noteId = note.noteId;
-		if (window.backTo["history"] == undefined) {
+        if (window.backTo["history"] == undefined) {
 			const historyNote = await api.getNote(window.backTo["historyNoteId"]);
 			try {
 				window.backTo["history"] = JSON.parse((await historyNote.getNoteComplement()).content);
@@ -106,10 +104,12 @@ class BackToHistoryWidget extends api.NoteContextAwareWidget {
 			}
 			if (!(window.backTo["history"] instanceof Array)) {
 				//window.backTo["history"] = [];
-				window.backTo["history"] = Object.entries(window.backTo["history"]).map(([id, radio]) => ({ id, radio }));
+				window.backTo["history"] = Object.entries(window.backTo["history"]).map(([id, ratio]) => ({ id, ratio }));
 
 			}
 		}
+		if (window.backTo["noteId"] == window.backTo["historyNoteId"]) { return }
+		
 		if (note.type == 'code' || note.type == 'text') {
 			window.backTo["fnotetype"] = 1;
 		} else {
@@ -125,8 +125,15 @@ class BackToHistoryWidget extends api.NoteContextAwareWidget {
 					scrollFunc(event);
 				});
 			}, 1000); //When opening a new page, it takes a second to start recording
-			if (window.backTo["history"].some(function (element) { return element.id === window.backTo["noteId"]; }) && window.backTo["history"].filter(function (obj) { return obj.id === window.backTo["noteId"]; }).map(function (obj) { return obj.ratio; })[0] != "NaN") {
-				window.backTo["lastRatio"] = window.backTo["history"].filter(function (obj) { return obj.id === window.backTo["noteId"]; }).map(function (obj) { return obj.ratio; })[0]// When refreshing, it has to be fixed, otherwise it will change when scrolling.
+			
+			if ($("div.component.note-split:not(.hidden-ext) div.ribbon-tab-title").last().attr('class') != 'backToHis ribbon-tab-title') {
+				$("div.component.note-split:not(.hidden-ext) .ribbon-tab-title").last().after(`<div class="backToHis ribbon-tab-spacer" style="display:none;"></div>
+<div  class="backToHis ribbon-tab-title" style="display:none;" onclick="window.backTo['scrollTo']()">
+	<span  class="backToHis ribbon-tab-title-icon bx" style="display:none;"></span>
+</div>`);
+			}
+            if (window.backTo["history"].some(function (element) { return element.id === window.backTo["noteId"]; }) && window.backTo["history"].filter(function (obj) { return obj.id === window.backTo["noteId"]; }).map(function (obj) { return obj.ratio; })[0] != "NaN") {
+				window.backTo["lastRatio"] = Number(window.backTo["history"].filter(function (obj) { return obj.id === window.backTo["noteId"]; }).map(function (obj) { return obj.ratio; })[0]);// When refreshing, it has to be fixed, otherwise it will change when scrolling.
 				$("div.component.note-split:not(.hidden-ext) .backToHis").css('display', 'block');
 			} else {
 				$("div.component.note-split:not(.hidden-ext) .backToHis").css("display", "none");
@@ -135,15 +142,9 @@ class BackToHistoryWidget extends api.NoteContextAwareWidget {
 				}
 				return;
 			}
-			if ($("div.component.note-split:not(.hidden-ext) div.ribbon-tab-title").last().attr('class') != 'backToHis ribbon-tab-title') {
-				$("div.component.note-split:not(.hidden-ext) .ribbon-tab-title").last().after(`<div class="backToHis ribbon-tab-spacer" style="display:none;"></div>
-<div  class="backToHis ribbon-tab-title" style="display:none;" onclick="window.backTo['scrollTo']()">
-	<span  class="backToHis ribbon-tab-title-icon bx" style="display:none;"></span>
-</div>`);
-			}
-
 			$(".backToHis.ribbon-tab-title-icon.bx").attr("title", "Back To " + (window.backTo["lastRatio"] * 100).toFixed(1) + "%");
-			if (window.backTo["autoJump"] == 1) {
+			
+            if (window.backTo["autoJump"] == 1) {
 				window.backTo['scrollTo']();
 				clearInterval(window.backTo["jumpInterval"]);
 				var timesRun = 0;
@@ -164,6 +165,7 @@ class BackToHistoryWidget extends api.NoteContextAwareWidget {
 	}
 
 	async entitiesReloadedEvent() {
+        if (window.backTo["noteId"] == window.backTo["historyNoteId"]) { return; }
 		scrollFunc();
 	}
 }

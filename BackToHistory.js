@@ -120,7 +120,7 @@ class BackToHistoryWidget extends api.NoteContextAwareWidget {
 		$(document).ready(function () {
 			getnoteDiv();
 			setTimeout(function () {
-				$(window.backTo["noteDiv"]).on('mousewheel', function (event) {
+				$(window.backTo["noteDiv"]).on('scroll', function (event) {
 					if ($(this).is(':animated')) { return; }
 					scrollFunc(event);
 				});

@@ -1,7 +1,7 @@
 /*
 BackToHistory
 https://github.com/SiriusXT/trilium-back-to-history
-version:0.1.8
+version:0.1.9
 */
 var bth = new Array();
 bth["historyNoteId"] = ""; // Fill in the note id used to store history progress
@@ -70,7 +70,7 @@ function saveHis() {
 				const historyNote = await api.getNote(historyNoteId);
 				historyNote.setContent(JSON.stringify(history));
 			}, [historyNoteId, history]);
-		}, 60000, bth["historyNoteId"], bth["history"]);
+		}, 1000, bth["historyNoteId"], bth["history"]);
 	}
 }
 function scrollFunc(event) {

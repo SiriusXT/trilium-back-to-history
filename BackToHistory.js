@@ -1,7 +1,7 @@
 /*
 back-to-historytory
 https://github.com/SiriusXT/trilium-back-to-history
-version:0.2
+version:0.3
 */
 var bth = new Array();
 bth["historyNoteId"] = "KaRRn1daBqak"; // Fill in the note id used to store history progress
@@ -55,7 +55,7 @@ function saveHis() {
     if (true) {
         clearTimeout(bth["saveHisTimer"]);
         bth["saveHisTimer"] = setTimeout((historyNoteId, history) => {
-            api.runOnBackend(async (historyNoteId, history) => {
+            api.runAsyncOnBackendWithManualTransactionHandling(async (historyNoteId, history) => {
                 const historyNote = await api.getNote(historyNoteId);
                 historyNote.setContent(JSON.stringify(history));
             }, [historyNoteId, history]);
@@ -174,7 +174,7 @@ window.addEventListener("resize", function () {
 
 
 window.onbeforeunload = function () { //Trigger saving history again when closing the browser
-    api.runOnBackend(async (historyNoteId, history) => {
+    api.runAsyncOnBackendWithManualTransactionHandling(async (historyNoteId, history) => {
         const historyNote = await api.getNote(historyNoteId);
         historyNote.setContent(JSON.stringify(history));
     }, [bth["historyNoteId"], bth["history"]]);

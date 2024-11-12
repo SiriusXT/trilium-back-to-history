@@ -1,17 +1,18 @@
 /*
 Back-to-historytory
 https://github.com/SiriusXT/trilium-back-to-history
-version:0.4 for TriliumNext > 0.90.8
+version: 0.5 for TriliumNext > 0.90.8
 */
 
 
-const supportType = ['text','code']
+const supportType = ['text', 'code']
 const autoJump = true;
 const showJumpButton = true;
+const omitNoteIds=['root']
 
 // The following code does not need to be modified
 
-if (!autoJump && !showJumpButton){
+if (!autoJump && !showJumpButton) {
     console.log("BackUpHistory: do nothing");
     return;
 }
@@ -36,10 +37,14 @@ function creatHistory() {
 }
 
 let historyNoteId;
-let history;
-let shouldSave = false;
-async function checkHistory() {
-    if (history !== undefined) { return; }
+async function getHistory() {
+    let history;
+    if (historyNoteId !== undefined) { 
+        const childNote = await api.getNote(historyNoteId);
+        // return JSON.parse((await (await api.getNote(historyNoteId)).getNoteComplement()).content); 
+        history = JSON.parse((await childNote.getNoteComplement()).content);
+        return history;
+    }
     const children = api.startNote.children;
     let haveHistory = false;
     for (let i = 0; i < children.length; i++) {
@@ -60,6 +65,7 @@ async function checkHistory() {
         historyNoteId = note.noteId;
         history = JSON.parse((await note.getNoteComplement()).content);
     }
+    return history;
 }
 
 const jumpButton = `<div class="ribbon-tab-title jump-history">
@@ -76,7 +82,7 @@ var jumpHistory = class extends api.NoteContextAwareWidget {
         super();
     }
     isEnabled() {
-        return super.isEnabled() && supportType.includes(this.note.type);
+        return super.isEnabled() && supportType.includes(this.note.type) && !omitNoteIds.includes(this.noteId);
     }
     doRender() {
         this.$widget = $('');
@@ -84,16 +90,23 @@ var jumpHistory = class extends api.NoteContextAwareWidget {
     }
     scrollHandler = () => {
         clearTimeout(this.updateTimer);
-        this.updateTimer = setTimeout(() => {
-            const sc = this.$scrollingContainer[0];
-            const nl = this.$scrollingContainer.find('.note-list-widget')[0];
-            const radio = (sc.scrollTop / (sc.scrollHeight - nl.offsetHeight)).toFixed(5);
-            // console.log('BackToHistory:', this.note.noteId, radio, sc.scrollTop, sc.scrollHeight, nl.offsetHeight);
-            if (!isNaN(radio)) {
-                history[this.note.noteId] = radio;
-                shouldSave = true;
+        this.updateTimer = setTimeout(async () => {
+            try {
+                const sc = this.$scrollingContainer[0];
+                const nl = this.$scrollingContainer.find('.note-list-widget')[0];
+                const radio = (sc.scrollTop / (sc.scrollHeight - nl.offsetHeight)).toFixed(5);
+                if (!isNaN(radio)) {
+                    let history = await getHistory();
+                    history[this.note.noteId] = radio;
+                    saveHistory(history);
+                }
             }
-        }, 1000);
+            catch (error) {
+                const $noteSplit = $(`.note-split[data-ntx-id="${this.noteContext.ntxId}"]`);
+                this.$scrollingContainer = $noteSplit.children('.scrolling-container');
+                console.warn('jumpHistory: ', error);
+            }
+        }, 3000);
     }
     scrollTo = () => {
         const sc = this.$scrollingContainer[0];
@@ -143,7 +156,7 @@ var jumpHistory = class extends api.NoteContextAwareWidget {
         }, 1000);
     }
     async refreshWithNote() {
-        await checkHistory();
+        const history = await getHistory();
         this.scrollToRadio = history[this.note.noteId];
         await this.initEvent();
         if (this.scrollToRadio != undefined && autoJump) {
@@ -152,6 +165,8 @@ var jumpHistory = class extends api.NoteContextAwareWidget {
     }
     async entitiesReloadedEvent({ loadResults }) {
         if (loadResults.isNoteContentReloaded(this.noteId)) {
+            const $noteSplit = $(`.note-split[data-ntx-id="${this.noteContext.ntxId}"]`);
+        	this.$scrollingContainer = $noteSplit.children('.scrolling-container');
             this.scrollHandler();
         }
         if (loadResults.getAttributeRows().find(attr => attr.noteId === this.noteId)) {
@@ -162,7 +177,7 @@ var jumpHistory = class extends api.NoteContextAwareWidget {
 
 module.exports = jumpHistory;
 
-function saveHistory() {
+function saveHistory(history) {
     const keys = Object.keys(history);
     while (keys.length > 100) {
         const oldestKey = keys.shift();  // Get the oldest key
@@ -174,9 +189,4 @@ function saveHistory() {
     }, [historyNoteId, history]);
 }
 
-setInterval(() => {
-    if (shouldSave) {
-        shouldSave = false;
-        saveHistory();
-    }
-}, 5000)
+
